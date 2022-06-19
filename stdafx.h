@@ -115,6 +115,15 @@ namespace Vector3
 		return(xmf3Result);
 	}
 
+	inline XMFLOAT3 Multiply(XMFLOAT3& xmvVector, float fScalar)
+	{
+		xmvVector.x *= fScalar;
+		xmvVector.y *= fScalar;
+		xmvVector.z *= fScalar;
+
+		return(xmvVector);
+	}
+
 	inline float DotProduct(XMFLOAT3& xmf3Vector1, XMFLOAT3& xmf3Vector2)
 	{
 		XMFLOAT3 xmf3Result;

@@ -51,7 +51,7 @@ public:
 
 	bool isCollision(CHelicopterObject* other);
 	bool isOtherCollision(CHelicopterObject* other, int my_number);
-
+	int Target_On(CHelicopterObject* my);
 
 	bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);

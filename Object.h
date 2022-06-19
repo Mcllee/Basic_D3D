@@ -115,6 +115,12 @@ public:
 	CGameObject* m_pSibling = NULL;
 
 	void UpdateTransform(XMFLOAT4X4* pxmf4x4Parent);
+	void ResetTransform() {
+		m_xmf4x4Transform._11 = 1; m_xmf4x4Transform._12 = 0; m_xmf4x4Transform._13 = 0; m_xmf4x4Transform._14 = 0;
+		m_xmf4x4Transform._21 = 0; m_xmf4x4Transform._22 = 1; m_xmf4x4Transform._23 = 0; m_xmf4x4Transform._24 = 0;
+		m_xmf4x4Transform._31 = 0; m_xmf4x4Transform._32 = 0; m_xmf4x4Transform._33 = 1; m_xmf4x4Transform._34 = 0;
+		m_xmf4x4Transform._41 = 0; m_xmf4x4Transform._42 = 0; m_xmf4x4Transform._43 = 0; m_xmf4x4Transform._44 = 1;
+	}
 
 	//==============================
 
@@ -193,6 +199,10 @@ public:
     virtual ~CHelicopterObject();
 
 public:
+	bool		new_target = false;
+	XMFLOAT3	search_vector;
+	bool		Target_On = false;	// 누군가 목표 설정 여부
+	int			MyTargetNumber = -1;
 	XMFLOAT3	start_position;
 
 	char							m_pstrFrameName[64];

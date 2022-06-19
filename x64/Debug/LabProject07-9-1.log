@@ -1,12 +1,11 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: 중간 디렉터리(x64\Debug\)에 다른 프로젝트(LabProject07-9-1.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
-  Camera.cpp
-  GameFramework.cpp
-  Task_02.cpp
-  Object.cpp
-  Player.cpp
   Scene.cpp
-C:\Users\leemc\source\repos\Basic_D3D\Scene.cpp(408,29): warning C4244: '=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\leemc\source\repos\Basic_D3D\Scene.cpp(422,13): warning C4244: '=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  Shader.cpp
-  코드를 생성하고 있습니다...
+C:\Users\leemc\source\repos\Basic_D3D\Scene.cpp(437,32): warning C4244: '=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\leemc\source\repos\Basic_D3D\Scene.cpp(453,15): warning C4244: '=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\leemc\source\repos\Basic_D3D\Scene.cpp(459,53): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\leemc\source\repos\Basic_D3D\Scene.cpp(459,45): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\leemc\source\repos\Basic_D3D\Scene.cpp(459,37): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\leemc\source\repos\Basic_D3D\Scene.cpp(496,31): warning C4244: '=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\leemc\source\repos\Basic_D3D\Scene.cpp(510,14): warning C4244: '=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\leemc\source\repos\Basic_D3D\Scene.cpp(90): warning C4715: 'CScene::Target_On': 모든 제어 경로에서 값을 반환하지는 않습니다.
   LabProject07-9-1.vcxproj -> C:\Users\leemc\source\repos\Basic_D3D\x64\Debug\Task_02.exe

@@ -471,7 +471,9 @@ void CHelicopterObject::SetRotation(XMFLOAT3* axis, float angle)
 		m_xmf4x4Transform._31 = sin(angle); m_xmf4x4Transform._32 = 0; m_xmf4x4Transform._33 = cos(angle);
 	}
 	else if (axis->z > 0.0f) {
-
+		m_xmf4x4Transform._11 = 1; m_xmf4x4Transform._12 = 0; m_xmf4x4Transform._13 = 0;
+		m_xmf4x4Transform._21 = 0; m_xmf4x4Transform._22 = 1; m_xmf4x4Transform._23 = 0;
+		m_xmf4x4Transform._31 = 0; m_xmf4x4Transform._32 = 0; m_xmf4x4Transform._33 = 1;
 	}
 }
 

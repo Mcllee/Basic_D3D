@@ -36,7 +36,7 @@ bool CScene::isCollision(CHelicopterObject* other)
 
 bool CScene::isOtherCollision(CHelicopterObject* other, int my_number)
 {
-	for (int i = 0; i < m_nGameObjects; ++i) {
+	for (int i = 0; i < 4; ++i) {
 		if (my_number == i) continue;
 
 		ContainmentType colltype = other->OOBB.Contains(m_ppGameObjects[i]->OOBB);
@@ -57,6 +57,38 @@ bool CScene::isOtherCollision(CHelicopterObject* other, int my_number)
 
 	return false;
 }
+
+// 미사일의 목표물 지정함수
+int CScene::Target_On(CHelicopterObject* my)
+{
+	// 헬리콥터의 개수
+	for (int i = 0; i < 4; ++i) {
+		ContainmentType colltype = my->OOBB.Contains(m_ppGameObjects[i]->OOBB);
+		switch (colltype)
+		{
+		case DISJOINT:	// 밖에 있는 경우	-> Target Off
+			break;
+		case INTERSECTS:// 교차된 경우		-> Target On
+			my->MyTargetNumber = i;
+			if (Vector3::Length(Vector3::Subtract(my->GetPosition(), m_ppGameObjects[i]->GetPosition())) < 1.5f)
+			{
+				m_ppGameObjects[4]->Target_On = false;
+				m_ppGameObjects[4]->MyTargetNumber = -1;
+				m_ppGameObjects[4]->ResetTransform();
+				m_ppGameObjects[4]->SetScale(1.0f, 1.0f, 1.0f);
+
+				m_ppGameObjects[i]->SetPosition(m_ppGameObjects[i]->start_position);
+			}
+			return 0;
+			break;
+		case CONTAINS:	// 포함된 경우		-> Target On
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 
 void CScene::BuildDefaultLightsAndMaterials()
 {
@@ -127,7 +159,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	m_pTerrain->SetShader(m_ppShaderObjcet[1]);
 
 	// 게임 오브젝트 생성
-	m_nGameObjects = 4;
+	m_nGameObjects = 5;
 	m_ppGameObjects = new CHelicopterObject * [m_nGameObjects];
 
 	{
@@ -150,7 +182,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 		pApacheObject = new CApacheObject();
 		pApacheObject->SetChild(pGameObject, true);
 		pApacheObject->OnInitialize();
-		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f + 200.0f, 1000.0f, 500.0f);
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f + 400.0f, 1000.0f, 500.0f);
 		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
 		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
 		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
@@ -164,7 +196,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 		pApacheObject = new CApacheObject();
 		pApacheObject->SetChild(pGameObject, true);
 		pApacheObject->OnInitialize();
-		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f - 200.0f, 1000.0f, 500.0f);
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f - 400.0f, 1000.0f, 500.0f);
 		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
 		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
 		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
@@ -178,7 +210,7 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 		pApacheObject = new CApacheObject();
 		pApacheObject->SetChild(pGameObject, true);
 		pApacheObject->OnInitialize();
-		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f, 800.0f, 500.0f);
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f, 500.0f, 500.0f);
 		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
 		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
 		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
@@ -186,9 +218,22 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 
 		m_ppGameObjects[3] = pApacheObject;
 	}
+
+	{
+		CHelicopterObject* pGameObject = CHelicopterObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Tree.bin");
+		CHelicopterObject* Cactus = new CHelicopterObject();
+		Cactus = new CApacheObject();
+		Cactus->SetChild(pGameObject, true);
+		Cactus->OnInitialize();
+		Cactus->SetPosition(m_pTerrain->GetWidth() / 2.0f, -4000.0f, -4000.0f);
+		Cactus->Rotate(0.0f, 0.0f, 0.0f);
+		Cactus->OOBB.Center = Cactus->GetPosition();
+		Cactus->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
+		Cactus->start_position = Cactus->GetPosition();
+
+		m_ppGameObjects[4] = Cactus;
+	}
 	
-
-
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
@@ -308,12 +353,13 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		case 'W': m_ppGameObjects[0]->MoveForward(+1.0f); break;
-		case 'S': m_ppGameObjects[0]->MoveForward(-1.0f); break;
-		case 'A': m_ppGameObjects[0]->MoveStrafe(-1.0f); break;
-		case 'D': m_ppGameObjects[0]->MoveStrafe(+1.0f); break;
-		case 'Q': m_ppGameObjects[0]->MoveUp(+1.0f); break;
-		case 'R': m_ppGameObjects[0]->MoveUp(-1.0f); break;
+		case VK_SPACE:
+			m_ppGameObjects[4]->Target_On = false;
+			m_ppGameObjects[4]->MyTargetNumber = -1;
+			m_ppGameObjects[4]->ResetTransform();
+			m_ppGameObjects[4]->SetScale(1.0f, 1.0f, 1.0f);
+			m_ppGameObjects[4]->SetPosition(m_pPlayer->GetPosition());
+			break;
 		default:
 			break;
 		}
@@ -327,6 +373,8 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 // 플레이어 키 입력 설정
 bool CScene::ProcessInput(UCHAR* pKeysBuffer)
 {
+
+
 	return(false);
 }
 
@@ -367,27 +415,105 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 			m_ppGameObjects[i]->Animate(m_fElapsedTime, NULL);
 			m_ppGameObjects[i]->UpdateTransform(NULL);
 
-			// 단위벡터 만큼씩 이동한다.
-			XMFLOAT3 dis = Vector3::Normalize(Vector3::Subtract(m_pPlayer->GetPosition(), m_ppGameObjects[i]->GetPosition()));	// 적 -> 플레이어의 방향벡터
+			// 이동거리
+			XMFLOAT3 dis{};
+			
+			if (i >= 4) {
+				Target_On(m_ppGameObjects[i]);
 
-			// 플레이어와 객체들 충돌 체크 후 조치
-			if (isCollision(m_ppGameObjects[i])) {
-				m_pPlayer->SetVelocity({ 0.0f, 0.0f, 0.0f });
-				m_pPlayer->SetPosition(prev_position);
+				if (m_ppGameObjects[i]->MyTargetNumber >= 0) {	// 누군가와 접촉했다면
+
+					// 단위벡터 만큼씩 이동한다.
+					dis = Vector3::Normalize(Vector3::Subtract(m_ppGameObjects[m_ppGameObjects[i]->MyTargetNumber]->GetPosition(), m_ppGameObjects[i]->GetPosition()));	// 미사일 -> 적의 방향벡터
+					dis = Vector3::Multiply(dis, 4);
+					m_ppGameObjects[i]->SetPosition(Vector3::Add(m_ppGameObjects[i]->GetPosition(), dis));
+
+					// XZ평면 회전
+					{
+						XMFLOAT3 zero = { 0.0f, 0.0f, 0.0f };
+						dis = Vector3::Subtract(zero, dis);
+						XMFLOAT3 XxX = { 0.0f, 0.0f, 1.0f };
+						float rd2 = acos((XxX.x * dis.x + XxX.z * dis.z) / (1 * (sqrt(dis.x * dis.x + dis.z * dis.z))));
+						rd2 = rd2 * (180 / 3.14) + 180.0f;
+
+						XMFLOAT3 axis_Y = { 0.0f, 1.0f, 0.0f };
+
+						if (m_ppGameObjects[i]->GetPosition().x > m_ppGameObjects[m_ppGameObjects[i]->MyTargetNumber]->GetPosition().x)
+							rd2 *= -1;
+						m_ppGameObjects[i]->SetRotation(&axis_Y, rd2);
+					}
+					// X축 회전
+					{
+						float xz_lenght = sqrt(((m_ppGameObjects[m_ppGameObjects[i]->MyTargetNumber]->GetPosition().x - m_ppGameObjects[i]->GetPosition().x) 
+												* (m_ppGameObjects[m_ppGameObjects[i]->MyTargetNumber]->GetPosition().x - m_ppGameObjects[i]->GetPosition().x))
+											+ ((m_ppGameObjects[m_ppGameObjects[i]->MyTargetNumber]->GetPosition().z - m_ppGameObjects[i]->GetPosition().z) 
+												* (m_ppGameObjects[m_ppGameObjects[i]->MyTargetNumber]->GetPosition().z - m_ppGameObjects[i]->GetPosition().z)));
+
+						rd = atan2f((m_ppGameObjects[i]->GetPosition().y - m_ppGameObjects[m_ppGameObjects[i]->MyTargetNumber]->GetPosition().y), xz_lenght);
+						rd = rd * (180 / 3.14);
+
+						m_ppGameObjects[i]->Rotate(-rd, 0.0f, 0.0f);
+					}
+
+					m_ppGameObjects[i]->SetScale(6.0f, 6.0f, 6.0f);
+					m_ppGameObjects[4]->Rotate(rand(), rand(), rand());
+
+					m_ppGameObjects[i]->OOBB.Center = m_ppGameObjects[i]->GetPosition();	// OOBB 박스 위치 갱신
+				}
+				else if (m_ppGameObjects[i]->MyTargetNumber == -1) {
+					m_ppGameObjects[i]->search_vector = Vector3::Normalize(m_pPlayer->GetLook());
+					m_ppGameObjects[i]->search_vector = Vector3::Multiply(m_ppGameObjects[i]->search_vector, 4);
+					m_ppGameObjects[i]->SetPosition(Vector3::Add(m_ppGameObjects[i]->GetPosition(), m_ppGameObjects[i]->search_vector));
+					m_ppGameObjects[i]->OOBB.Center = m_ppGameObjects[i]->GetPosition();	// OOBB 박스 위치 갱신
+				}
 			}
 			else {
-				prev_position = m_pPlayer->GetPosition();
+				dis = Vector3::Normalize(Vector3::Subtract(m_pPlayer->GetPosition(), m_ppGameObjects[i]->GetPosition()));	// 적 -> 플레이어의 방향벡터
 
-				m_ppGameObjects[i]->SetPosition(Vector3::Add(m_ppGameObjects[i]->GetPosition(), dis));
-				m_ppGameObjects[i]->OOBB.Center = m_ppGameObjects[i]->GetPosition();
+				// 플레이어와 객체들 충돌 체크 후 조치
+				if (isCollision(m_ppGameObjects[i])) {
+					m_pPlayer->SetVelocity({ 0.0f, 0.0f, 0.0f });
+					m_pPlayer->SetPosition(prev_position);
+				}
+				else {
+					prev_position = m_pPlayer->GetPosition();
+
+					m_ppGameObjects[i]->SetPosition(Vector3::Add(m_ppGameObjects[i]->GetPosition(), dis));
+					m_ppGameObjects[i]->OOBB.Center = m_ppGameObjects[i]->GetPosition();
+				}
+
+				// 객체와 다른 객체간 충돌인 경우
+				if (isOtherCollision(m_ppGameObjects[i], i)) {
+					m_ppGameObjects[i]->SetPosition(m_ppGameObjects[i]->start_position);
+				}
+
+				// XZ평면 회전
+				{
+					XMFLOAT3 zero = { 0.0f, 0.0f, 0.0f };
+					dis = Vector3::Subtract(zero, dis);
+					XMFLOAT3 XxX = { 0.0f, 0.0f, 1.0f };
+					float rd2 = acos((XxX.x * dis.x + XxX.z * dis.z) / (1 * (sqrt(dis.x * dis.x + dis.z * dis.z))));
+					rd2 = rd2 * (180 / 3.14) + 180.0f;
+
+					XMFLOAT3 axis_Y = { 0.0f, 1.0f, 0.0f };
+
+					if (m_pPlayer->GetPosition().x > m_ppGameObjects[i]->GetPosition().x)
+						rd2 *= -1;
+					m_ppGameObjects[i]->SetRotation(&axis_Y, rd2);
+				}
+				// X축 회전
+				{
+					float xz_lenght = sqrt(((m_pPlayer->GetPosition().x - m_ppGameObjects[i]->GetPosition().x) * (m_pPlayer->GetPosition().x - m_ppGameObjects[i]->GetPosition().x))
+						+ ((m_pPlayer->GetPosition().z - m_ppGameObjects[i]->GetPosition().z) * (m_pPlayer->GetPosition().z - m_ppGameObjects[i]->GetPosition().z)));
+
+					rd = atan2f((m_pPlayer->GetPosition().y - m_ppGameObjects[i]->GetPosition().y), xz_lenght);
+					rd = rd * (180 / 3.14);
+
+					m_ppGameObjects[i]->Rotate(-rd, 0.0f, 0.0f);
+				}
 			}
 
-			// 객체와 다른 객체간 충돌인 경우
-			if (isOtherCollision(m_ppGameObjects[i], i)) {
-				m_ppGameObjects[i]->SetPosition(m_ppGameObjects[i]->start_position);
-			}
-
-			//여기여기
+			//객체와 터레인 충돌체크
 			XMFLOAT3 xmf3PlayerPosition = m_ppGameObjects[i]->GetPosition();
 			float fHeight = GetTerrain()->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z) + 6.0f;	// 현재 맵 위치의 높이
 
@@ -398,34 +524,9 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 				m_ppGameObjects[i]->SetPosition(xmf3PlayerPosition);
 				m_ppGameObjects[i]->OOBB.Center = xmf3PlayerPosition;	// OOBB 박스 위치 갱신
 			}
-
-			// XZ평면 회전
-			{
-				XMFLOAT3 zero = { 0.0f, 0.0f, 0.0f };
-				dis = Vector3::Subtract(zero, dis);
-				XMFLOAT3 XxX = { 0.0f, 0.0f, 1.0f };
-				float rd2 = acos((XxX.x * dis.x + XxX.z * dis.z) / (1 * (sqrt(dis.x * dis.x + dis.z * dis.z))));
-				rd2= rd2 * (180 / 3.14) + 180.0f;
-
-				XMFLOAT3 axis_Y = { 0.0f, 1.0f, 0.0f };
-
-				if (m_pPlayer->GetPosition().x > m_ppGameObjects[i]->GetPosition().x)
-					rd2 *= -1;
-				m_ppGameObjects[i]->SetRotation(&axis_Y, rd2);
-			}
-			// X축 회전
-			{
-				float xz_lenght = sqrt(((m_pPlayer->GetPosition().x - m_ppGameObjects[i]->GetPosition().x) * (m_pPlayer->GetPosition().x - m_ppGameObjects[i]->GetPosition().x))
-					+ ((m_pPlayer->GetPosition().z - m_ppGameObjects[i]->GetPosition().z) * (m_pPlayer->GetPosition().z - m_ppGameObjects[i]->GetPosition().z)));
-
-				rd = atan2f((m_pPlayer->GetPosition().y - m_ppGameObjects[i]->GetPosition().y), xz_lenght);
-				rd = rd * (180 / 3.14);
-
-				m_ppGameObjects[i]->Rotate(-rd, 0.0f, 0.0f);
-			}
-			// m_ppGameObjects[i]->SetScale(1.0f, 1.0f, 1.0f);
-
+			
 			m_ppGameObjects[i]->Render(pd3dCommandList, pCamera);
 		}
+		
 	}
 }
