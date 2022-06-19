@@ -13,6 +13,51 @@ CScene::~CScene()
 {
 }
 
+// 두 객체간 충돌 체크
+bool CScene::isCollision(CHelicopterObject* other)
+{
+	ContainmentType colltype = m_pPlayer->OOBB.Contains(other->OOBB);
+	switch (colltype)
+	{
+	case DISJOINT:	// 밖에 있는 경우
+		break;
+	case INTERSECTS:// 교차된 경우
+		return true;
+		break;
+	case CONTAINS:	// 포함된 경우
+		return true;
+		break;
+	default:
+		break;
+	}
+
+	return false;
+}
+
+bool CScene::isOtherCollision(CHelicopterObject* other, int my_number)
+{
+	for (int i = 0; i < m_nGameObjects; ++i) {
+		if (my_number == i) continue;
+
+		ContainmentType colltype = other->OOBB.Contains(m_ppGameObjects[i]->OOBB);
+		switch (colltype)
+		{
+		case DISJOINT:	// 밖에 있는 경우
+			break;
+		case INTERSECTS:// 교차된 경우
+			return true;
+			break;
+		case CONTAINS:	// 포함된 경우
+			return true;
+			break;
+		default:
+			break;
+		}
+	}
+
+	return false;
+}
+
 void CScene::BuildDefaultLightsAndMaterials()
 {
 	m_nLights = 3;
@@ -73,11 +118,6 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	m_ppShaderObjcet[1]->CreateShader(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
 
 	// 터레인 생성
-
-	/*XMFLOAT3 xmf3Scale(16.0f, 8.0f,16.0f);
-	XMFLOAT3 xmf3Pos(-4000.0f, -1500.0f, -4000.0f);*/
-
-	// 터레인 생성
 	XMFLOAT3 xmf3Scale(16.0f, 8.0f, 16.0f);
 	XMFLOAT4 xmf4Color(0.0f, 0.2f, 0.0f, 0.0f);
 	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Assets/Image/Terrain/terrain5.raw"), 1025, 1025, 257, 257, xmf3Scale, xmf4Color);
@@ -87,8 +127,67 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 	m_pTerrain->SetShader(m_ppShaderObjcet[1]);
 
 	// 게임 오브젝트 생성
-	m_nGameObjects = 0;
+	m_nGameObjects = 4;
 	m_ppGameObjects = new CHelicopterObject * [m_nGameObjects];
+
+	{
+		CHelicopterObject* pGameObject = CHelicopterObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Helicopters/Apache.bin");
+		CHelicopterObject* pApacheObject = new CHelicopterObject();
+		pApacheObject = new CApacheObject();
+		pApacheObject->SetChild(pGameObject, true);
+		pApacheObject->OnInitialize();
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f, 1000.0f, 500.0f);
+		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
+		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
+		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
+		pApacheObject->start_position = pApacheObject->GetPosition();
+
+		m_ppGameObjects[0] = pApacheObject;
+	}
+	{
+		CHelicopterObject* pGameObject = CHelicopterObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Helicopters/Apache.bin");
+		CHelicopterObject* pApacheObject = new CHelicopterObject();
+		pApacheObject = new CApacheObject();
+		pApacheObject->SetChild(pGameObject, true);
+		pApacheObject->OnInitialize();
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f + 200.0f, 1000.0f, 500.0f);
+		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
+		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
+		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
+		pApacheObject->start_position = pApacheObject->GetPosition();
+
+		m_ppGameObjects[1] = pApacheObject; 
+	}
+	{
+		CHelicopterObject* pGameObject = CHelicopterObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Helicopters/Apache.bin");
+		CHelicopterObject* pApacheObject = new CHelicopterObject();
+		pApacheObject = new CApacheObject();
+		pApacheObject->SetChild(pGameObject, true);
+		pApacheObject->OnInitialize();
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f - 200.0f, 1000.0f, 500.0f);
+		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
+		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
+		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
+		pApacheObject->start_position = pApacheObject->GetPosition();
+
+		m_ppGameObjects[2] = pApacheObject;
+	}
+	{
+		CHelicopterObject* pGameObject = CHelicopterObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Helicopters/Apache.bin");
+		CHelicopterObject* pApacheObject = new CHelicopterObject();
+		pApacheObject = new CApacheObject();
+		pApacheObject->SetChild(pGameObject, true);
+		pApacheObject->OnInitialize();
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f, 800.0f, 500.0f);
+		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
+		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
+		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
+		pApacheObject->start_position = pApacheObject->GetPosition();
+
+		m_ppGameObjects[3] = pApacheObject;
+	}
+	
+
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
@@ -225,6 +324,7 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 	return(false);
 }
 
+// 플레이어 키 입력 설정
 bool CScene::ProcessInput(UCHAR* pKeysBuffer)
 {
 	return(false);
@@ -233,7 +333,10 @@ bool CScene::ProcessInput(UCHAR* pKeysBuffer)
 void CScene::AnimateObjects(float fTimeElapsed)
 {
 	m_fElapsedTime = fTimeElapsed;
+
+	// 게임 오브젝트 애니메이션 - 제대로 실행 됨
 	for (int i = 0; i < m_nGameObjects; i++) m_ppGameObjects[i]->Animate(fTimeElapsed, NULL);
+
 	if (m_pLights)
 	{
 		XMFLOAT3 offset = XMFLOAT3(0, 100, 50);
@@ -253,7 +356,7 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 	UpdateShaderVariables(pd3dCommandList);
 
 	D3D12_GPU_VIRTUAL_ADDRESS d3dcbLightsGpuVirtualAddress = m_pd3dcbLights->GetGPUVirtualAddress();
-	pd3dCommandList->SetGraphicsRootConstantBufferView(3, d3dcbLightsGpuVirtualAddress); //Lights
+	pd3dCommandList->SetGraphicsRootConstantBufferView(3, d3dcbLightsGpuVirtualAddress);
 	
 	if (m_pTerrain) m_pTerrain->Render(pd3dCommandList, pCamera);
 
@@ -263,8 +366,66 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 		{
 			m_ppGameObjects[i]->Animate(m_fElapsedTime, NULL);
 			m_ppGameObjects[i]->UpdateTransform(NULL);
+
+			// 단위벡터 만큼씩 이동한다.
+			XMFLOAT3 dis = Vector3::Normalize(Vector3::Subtract(m_pPlayer->GetPosition(), m_ppGameObjects[i]->GetPosition()));	// 적 -> 플레이어의 방향벡터
+
+			// 플레이어와 객체들 충돌 체크 후 조치
+			if (isCollision(m_ppGameObjects[i])) {
+				m_pPlayer->SetVelocity({ 0.0f, 0.0f, 0.0f });
+				m_pPlayer->SetPosition(prev_position);
+			}
+			else {
+				prev_position = m_pPlayer->GetPosition();
+
+				m_ppGameObjects[i]->SetPosition(Vector3::Add(m_ppGameObjects[i]->GetPosition(), dis));
+				m_ppGameObjects[i]->OOBB.Center = m_ppGameObjects[i]->GetPosition();
+			}
+
+			// 객체와 다른 객체간 충돌인 경우
+			if (isOtherCollision(m_ppGameObjects[i], i)) {
+				m_ppGameObjects[i]->SetPosition(m_ppGameObjects[i]->start_position);
+			}
+
+			//여기여기
+			XMFLOAT3 xmf3PlayerPosition = m_ppGameObjects[i]->GetPosition();
+			float fHeight = GetTerrain()->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z) + 6.0f;	// 현재 맵 위치의 높이
+
+			if (xmf3PlayerPosition.y < fHeight)					// 맵보다 플레이어가 낮을 경우
+			{
+				// 높이 조정
+				xmf3PlayerPosition.y = fHeight;
+				m_ppGameObjects[i]->SetPosition(xmf3PlayerPosition);
+				m_ppGameObjects[i]->OOBB.Center = xmf3PlayerPosition;	// OOBB 박스 위치 갱신
+			}
+
+			// XZ평면 회전
+			{
+				XMFLOAT3 zero = { 0.0f, 0.0f, 0.0f };
+				dis = Vector3::Subtract(zero, dis);
+				XMFLOAT3 XxX = { 0.0f, 0.0f, 1.0f };
+				float rd2 = acos((XxX.x * dis.x + XxX.z * dis.z) / (1 * (sqrt(dis.x * dis.x + dis.z * dis.z))));
+				rd2= rd2 * (180 / 3.14) + 180.0f;
+
+				XMFLOAT3 axis_Y = { 0.0f, 1.0f, 0.0f };
+
+				if (m_pPlayer->GetPosition().x > m_ppGameObjects[i]->GetPosition().x)
+					rd2 *= -1;
+				m_ppGameObjects[i]->SetRotation(&axis_Y, rd2);
+			}
+			// X축 회전
+			{
+				float xz_lenght = sqrt(((m_pPlayer->GetPosition().x - m_ppGameObjects[i]->GetPosition().x) * (m_pPlayer->GetPosition().x - m_ppGameObjects[i]->GetPosition().x))
+					+ ((m_pPlayer->GetPosition().z - m_ppGameObjects[i]->GetPosition().z) * (m_pPlayer->GetPosition().z - m_ppGameObjects[i]->GetPosition().z)));
+
+				rd = atan2f((m_pPlayer->GetPosition().y - m_ppGameObjects[i]->GetPosition().y), xz_lenght);
+				rd = rd * (180 / 3.14);
+
+				m_ppGameObjects[i]->Rotate(-rd, 0.0f, 0.0f);
+			}
+			// m_ppGameObjects[i]->SetScale(1.0f, 1.0f, 1.0f);
+
 			m_ppGameObjects[i]->Render(pd3dCommandList, pCamera);
 		}
 	}
 }
-

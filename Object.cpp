@@ -91,6 +91,14 @@ CGameObject::~CGameObject()
 	}
 }
 
+void CGameObject::UpdateTransform(XMFLOAT4X4* pxmf4x4Parent)
+{
+	m_xmf4x4World = (pxmf4x4Parent) ? Matrix4x4::Multiply(m_xmf4x4Transform, *pxmf4x4Parent) : m_xmf4x4Transform;
+
+	if (m_pSibling) m_pSibling->UpdateTransform(pxmf4x4Parent);
+	if (m_pChild) m_pChild->UpdateTransform(&m_xmf4x4World);
+}
+
 void CGameObject::CreateShaderVariables(ID3D12Device* pd3dDevice,
 	ID3D12GraphicsCommandList* pd3dCommandList)
 {
@@ -124,9 +132,15 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 
 void CGameObject::SetPosition(float x, float y, float z)
 {
-	m_xmf4x4World._41 = x;
+	/*m_xmf4x4World._41 = x;
 	m_xmf4x4World._42 = y;
-	m_xmf4x4World._43 = z;
+	m_xmf4x4World._43 = z;*/
+
+	m_xmf4x4Transform._41 = x;
+	m_xmf4x4Transform._42 = y;
+	m_xmf4x4Transform._43 = z;
+
+	UpdateTransform(NULL);
 }
 
 void CGameObject::SetPosition(XMFLOAT3 xmf3Position)
@@ -235,8 +249,10 @@ void CGameObject::ReleaseUploadBuffers()
 	}
 }
 
-void CGameObject::Animate(float fTimeElapsed)
+void CGameObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 {
+	if (m_pSibling) m_pSibling->Animate(fTimeElapsed, pxmf4x4Parent);
+	if (m_pChild) m_pChild->Animate(fTimeElapsed, &m_xmf4x4World);
 }
 
 void CGameObject::OnPrepareRender()
@@ -333,6 +349,12 @@ void CHelicopterObject::SetMaterial(int nMaterial, CMaterial* pMaterial)
 	if (m_ppMaterials[nMaterial]) m_ppMaterials[nMaterial]->AddRef();
 }
 
+void CHelicopterObject::OnInitialize()
+{
+	m_pMainRotorFrame = FindFrame("rotor");
+	m_pTailRotorFrame = FindFrame("black_m_7");
+}
+
 void CHelicopterObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 {
 	oobb = BoundingOrientedBox(XMFLOAT3(m_xmf4x4Transform._41, m_xmf4x4Transform._42, m_xmf4x4Transform._43), XMFLOAT3(8.0f, 2.0f, 20.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -416,6 +438,12 @@ void CHelicopterObject::UpdateTransform(XMFLOAT4X4* pxmf4x4Parent)
 {
 	m_xmf4x4World = (pxmf4x4Parent) ? Matrix4x4::Multiply(m_xmf4x4Transform, *pxmf4x4Parent) : m_xmf4x4Transform;
 
+	//============================================================================================================
+	
+	
+
+	//============================================================================================================
+
 	if (m_pSibling) m_pSibling->UpdateTransform(pxmf4x4Parent);
 	if (m_pChild) m_pChild->UpdateTransform(&m_xmf4x4World);
 }
@@ -426,6 +454,25 @@ void CHelicopterObject::SetScale(float x, float y, float z)
 	m_xmf4x4Transform = Matrix4x4::Multiply(mtxScale, m_xmf4x4Transform);
 
 	UpdateTransform(NULL);
+}
+
+void CHelicopterObject::SetRotation(XMFLOAT3* axis, float angle)
+{
+	angle = XMConvertToRadians(angle);
+
+	if (axis->x > 0.0f) {
+		m_xmf4x4Transform._11 = 1; m_xmf4x4Transform._12 = 0;			m_xmf4x4Transform._13 = 0;
+		m_xmf4x4Transform._21 = 0; m_xmf4x4Transform._22 = cos(angle);	m_xmf4x4Transform._23 = sin(angle);
+		m_xmf4x4Transform._31 = 0; m_xmf4x4Transform._32 = -sin(angle); m_xmf4x4Transform._33 = cos(angle);
+	}
+	else if (axis->y > 0.0f) {
+		m_xmf4x4Transform._11 = cos(angle); m_xmf4x4Transform._12 = 0; m_xmf4x4Transform._13 = -sin(angle);
+		m_xmf4x4Transform._21 = 0;			m_xmf4x4Transform._22 = 1; m_xmf4x4Transform._23 = 0;
+		m_xmf4x4Transform._31 = sin(angle); m_xmf4x4Transform._32 = 0; m_xmf4x4Transform._33 = cos(angle);
+	}
+	else if (axis->z > 0.0f) {
+
+	}
 }
 
 void CHelicopterObject::Rotate(float fPitch, float fYaw, float fRoll)
@@ -670,7 +717,7 @@ CHelicopterObject* CHelicopterObject::LoadFrameHierarchyFromFile(ID3D12Device* p
 			CMeshLoadInfo* pMeshInfo = pGameObject->LoadMeshInfoFromFile(pInFile);
 			if (pMeshInfo)
 			{
-				CMesh* pMesh = NULL;
+				CMesh* pMesh = nullptr;
 				if (pMeshInfo->m_nType & VERTEXT_NORMAL)
 				{
 					pMesh = new CMeshIlluminatedFromFile(pd3dDevice, pd3dCommandList, pMeshInfo);
@@ -737,6 +784,8 @@ void CHelicopterObject::PrintFrameInfo(CHelicopterObject* pGameObject, CHelicopt
 	if (pGameObject->m_pSibling) CHelicopterObject::PrintFrameInfo(pGameObject->m_pSibling, pParent);
 	if (pGameObject->m_pChild) CHelicopterObject::PrintFrameInfo(pGameObject->m_pChild, pGameObject);
 }
+
+
 
 CHelicopterObject* CHelicopterObject::LoadGeometryFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, char* pstrFileName)
 {
@@ -1006,4 +1055,36 @@ void CTerrainObject::Animate(float fTimeElapsed)
 
 void CTerrainObject::OnPrepareRender()
 {
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+CApacheObject::CApacheObject()
+{
+}
+
+CApacheObject::~CApacheObject()
+{
+}
+
+void CApacheObject::OnInitialize()
+{
+	m_pMainRotorFrame = FindFrame("rotor");
+	m_pTailRotorFrame = FindFrame("black_m_7");
+}
+
+void CApacheObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
+{
+	if (m_pMainRotorFrame)
+	{
+		XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 2.0f) * fTimeElapsed);
+		m_pMainRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pMainRotorFrame->m_xmf4x4Transform);
+	}
+	if (m_pTailRotorFrame)
+	{
+		XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
+		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
+	}
+
+	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
 }

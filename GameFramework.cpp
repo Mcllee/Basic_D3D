@@ -404,8 +404,10 @@ void CGameFramework::BuildObjects()
 	m_pScene = new CScene();
 	if (m_pScene) m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
 
-	CHelicopterPlayer*pPlayer = new CHelicopterPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), m_pScene->GetTerrain());
-	pPlayer->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	CHelicopterPlayer* pPlayer = new CHelicopterPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), m_pScene->GetTerrain());
+
+	// 플레이어 시작위치 결정
+	pPlayer->SetPosition(XMFLOAT3(m_pScene->GetTerrain()->GetWidth() / 2.0f, 1000.0f, 0.0f));
 	m_pScene->m_pPlayer = m_pPlayer = pPlayer;
 	m_pCamera = m_pPlayer->GetCamera();
 
@@ -467,7 +469,8 @@ void CGameFramework::ProcessInput()
 					m_pPlayer->Rotate(cyDelta, cxDelta, 0.0f);
 			}
 			if (dwDirection) {
-				m_pPlayer->Move(dwDirection, 13.0f, false);
+				//							이동속도
+				m_pPlayer->Move(dwDirection, 4.0f, false);
 			}			
 		}
 	}
@@ -516,7 +519,6 @@ void CGameFramework::FrameAdvance()
 	m_GameTimer.Tick(60.0f);
 	
 	ProcessInput();
-
     AnimateObjects();
 
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
@@ -533,7 +535,7 @@ void CGameFramework::FrameAdvance()
 	m_pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle = m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	d3dRtvCPUDescriptorHandle.ptr += (m_nSwapChainBufferIndex * m_nRtvDescriptorIncrementSize);
+	d3dRtvCPUDescriptorHandle.ptr += ((m_nSwapChainBufferIndex) * (m_nRtvDescriptorIncrementSize));
 
 	float pfClearColor[4] = { 0.1f, 0.2f, 0.4f, 1.0f };
 	m_pd3dCommandList->ClearRenderTargetView(d3dRtvCPUDescriptorHandle, pfClearColor/*Colors::Azure*/, 0, NULL);

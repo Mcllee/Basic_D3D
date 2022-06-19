@@ -249,9 +249,11 @@ CHelicopterPlayer::CHelicopterPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 	SetCameraUpdatedContext(pTerrain);
 
 	// 플레이어 객체 Transform 초기값
+	pGameObject->SetScale(1.0f, 1.0f, 1.0f);
 	pGameObject->Rotate(20.0f, 0.0f, 0.0f);
-	pGameObject->SetScale(0.01f, 0.01f, 0.01f);
-	pGameObject->SetPosition(0, 0, 0);
+	pGameObject->SetPosition(0.0f, 0.0f, 0.0f);
+	pGameObject->OOBB.Center = pGameObject->GetPosition();
+	pGameObject->OOBB.Extents = { 5.0f, 3.0f, 5.0f };
 	SetChild(pGameObject, true);
 
 	OnInitialize();
@@ -310,8 +312,6 @@ void CHelicopterPlayer::OnPlayerUpdateCallback(float fTimeElapsed)
 		// 높이 조정
 		xmf3PlayerPosition.y = fHeight;
 		SetPosition(xmf3PlayerPosition);
-
-		OOBB.Center = xmf3PlayerPosition;	// 충돌체크
 	}
 	else if (xmf3PlayerPosition.y > PlayerMaxHeight) {	// 플레이어가 PlayerMaxHeight보다 높을 경우
 		// 플레이어 속도 초기화
@@ -322,13 +322,15 @@ void CHelicopterPlayer::OnPlayerUpdateCallback(float fTimeElapsed)
 		// 높이 조정
 		xmf3PlayerPosition.y = PlayerMaxHeight;
 		SetPosition(xmf3PlayerPosition);
-
-		OOBB.Center = xmf3PlayerPosition;	// 충돌체크
 	}
+
+	OOBB.Center = xmf3PlayerPosition;	// OOBB 박스 위치 갱신
 }
 
 CCamera* CHelicopterPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 {
+	// 카메라 Transform 설정
+
 	DWORD nCurrentCameraMode = (m_pCamera) ? m_pCamera->GetMode() : 0x00;
 	if (nCurrentCameraMode == nNewCameraMode) return(m_pCamera);
 	switch (nNewCameraMode)
@@ -364,7 +366,7 @@ CCamera* CHelicopterPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapse
 		SetMaxVelocityY(40.0f);
 		m_pCamera = OnChangeCamera(THIRD_PERSON_CAMERA, nCurrentCameraMode);
 		m_pCamera->SetTimeLag(0.25f);
-		m_pCamera->SetOffset(XMFLOAT3(0.0f, 1.0f, -2.0f));
+		m_pCamera->SetOffset(XMFLOAT3(0.0f, 50.0f, -100.0f));
 		m_pCamera->GenerateProjectionMatrix(1.01f, 8000.0f, ASPECT_RATIO, 60.0f);
 		m_pCamera->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
 		m_pCamera->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);

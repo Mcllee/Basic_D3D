@@ -2,12 +2,12 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\User\OneDrive\바탕 화면\기본베이스\Test\Test\x64\Debug\Task_02.exe</FullPath>
+      <FullPath>C:\Users\leemc\source\repos\Basic_D3D\x64\Debug\Task_02.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>C:\Users\User\OneDrive\바탕 화면\기본베이스\Test\Test\x64\Debug\Shaders.cso</FullPath>
+      <FullPath>C:\Users\leemc\source\repos\Basic_D3D\x64\Debug\Shaders.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

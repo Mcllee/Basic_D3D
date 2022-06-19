@@ -91,7 +91,7 @@ public:
 	CHelicopterObject*				m_pTailRotorFrame = NULL;
 
 private:
-	float					PlayerMaxHeight = 1000.0f;
+	float					PlayerMaxHeight = 2000.0f;
 
 	virtual void OnInitialize();
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent = NULL);

@@ -49,6 +49,10 @@ public:
     CScene();
     ~CScene();
 
+	bool isCollision(CHelicopterObject* other);
+	bool isOtherCollision(CHelicopterObject* other, int my_number);
+
+
 	bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 
@@ -65,11 +69,15 @@ public:
 
 	bool ProcessInput(UCHAR *pKeysBuffer);
     void AnimateObjects(float fTimeElapsed);
+
+	float rd;	//임시변수
+
     void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL);
 
 	void ReleaseUploadBuffers();
 
 	CPlayer						*m_pPlayer = NULL;
+	XMFLOAT3					prev_position;
 
 public:
 	ID3D12RootSignature			*m_pd3dGraphicsRootSignature = NULL;

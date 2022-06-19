@@ -108,6 +108,16 @@ public:
 class CGameObject
 {
 public:
+
+	XMFLOAT4X4						m_xmf4x4Transform;
+	CGameObject* m_pParent = NULL;
+	CGameObject* m_pChild = NULL;
+	CGameObject* m_pSibling = NULL;
+
+	void UpdateTransform(XMFLOAT4X4* pxmf4x4Parent);
+
+	//==============================
+
 	//상수 버퍼를 생성한다. 
 	virtual void CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 
@@ -142,7 +152,7 @@ public:
 	void ReleaseUploadBuffers();
 	virtual void SetMesh(int nIndex, CMesh* pMesh);	
 	virtual void SetShader(CShader* pShader);
-	virtual void Animate(float fTimeElapsed);
+	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent);
 	virtual void OnPrepareRender();
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
 
@@ -167,6 +177,10 @@ public:
 
 class CHelicopterObject : public CGameObject
 {
+protected:
+	CGameObject* m_pMainRotorFrame = NULL;
+	CGameObject* m_pTailRotorFrame = NULL;
+
 private:
 	int								m_nReferences = 0;
 
@@ -179,6 +193,8 @@ public:
     virtual ~CHelicopterObject();
 
 public:
+	XMFLOAT3	start_position;
+
 	char							m_pstrFrameName[64];
 
 	CMesh							*m_pMesh = NULL;
@@ -186,8 +202,8 @@ public:
 	int								m_nMaterials = 0;
 	CMaterial						**m_ppMaterials = NULL;
 
-	XMFLOAT4X4						m_xmf4x4Transform;
-	XMFLOAT4X4						m_xmf4x4World;
+	/*XMFLOAT4X4					m_xmf4x4Transform;
+	XMFLOAT4X4						m_xmf4x4World;*/
 
 	CHelicopterObject 					*m_pParent = NULL;
 	CHelicopterObject 					*m_pChild = NULL;
@@ -202,7 +218,7 @@ public:
 
 	virtual void BuildMaterials(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList) { }
 
-	virtual void OnInitialize() { }
+	virtual void OnInitialize();
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent=NULL);
 	virtual void AnimateEngine(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent=NULL);
 
@@ -220,6 +236,7 @@ public:
 
 	void SetScale(float x, float y, float z);
 
+	void SetRotation(XMFLOAT3* axis, float angle);
 	void Rotate(float fPitch = 10.0f, float fYaw = 10.0f, float fRoll = 10.0f);
 	void Rotate(XMFLOAT3 *pxmf3Axis, float fAngle);
 	void Rotate(XMFLOAT4 *pxmf4Quaternion);
@@ -335,3 +352,13 @@ public:
 	float GetLength() { return(m_nLength * m_xmf3Scale.z); }
 };
 
+class CApacheObject : public CHelicopterObject
+{
+public:
+	CApacheObject();
+	virtual ~CApacheObject();
+
+public:
+	virtual void OnInitialize();
+	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+};
