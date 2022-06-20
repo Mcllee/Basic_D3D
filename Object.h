@@ -199,6 +199,7 @@ public:
     virtual ~CHelicopterObject();
 
 public:
+	float		obj_speed = 1;
 	bool		new_target = false;
 	XMFLOAT3	search_vector;
 	bool		Target_On = false;	// 누군가 목표 설정 여부

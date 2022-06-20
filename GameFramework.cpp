@@ -469,7 +469,7 @@ void CGameFramework::ProcessInput()
 			}
 			if (dwDirection) {
 				//							이동속도
-				m_pPlayer->Move(dwDirection, 4.0f, false);
+				m_pPlayer->Move(dwDirection, 20.0f, false);
 			}			
 		}
 	}

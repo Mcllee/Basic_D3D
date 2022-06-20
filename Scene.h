@@ -49,6 +49,9 @@ public:
     CScene();
     ~CScene();
 
+	int spawn_number = 0;
+	int timerate = 0;
+
 	bool isCollision(CHelicopterObject* other);
 	bool isOtherCollision(CHelicopterObject* other, int my_number);
 	int Target_On(CHelicopterObject* my);

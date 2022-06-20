@@ -70,7 +70,7 @@ int CScene::Target_On(CHelicopterObject* my)
 			break;
 		case INTERSECTS:// 교차된 경우		-> Target On
 			my->MyTargetNumber = i;
-			if (Vector3::Length(Vector3::Subtract(my->GetPosition(), m_ppGameObjects[i]->GetPosition())) < 1.5f)
+			if (Vector3::Length(Vector3::Subtract(my->GetPosition(), m_ppGameObjects[i]->GetPosition())) < 15.0f)
 			{
 				m_ppGameObjects[4]->Target_On = false;
 				m_ppGameObjects[4]->MyTargetNumber = -1;
@@ -168,11 +168,12 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 		pApacheObject = new CApacheObject();
 		pApacheObject->SetChild(pGameObject, true);
 		pApacheObject->OnInitialize();
-		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f, 1000.0f, 500.0f);
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f, 1000.0f, m_pTerrain->GetWidth());
 		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
 		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
 		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
 		pApacheObject->start_position = pApacheObject->GetPosition();
+		pApacheObject->obj_speed = 15.0f;
 
 		m_ppGameObjects[0] = pApacheObject;
 	}
@@ -182,11 +183,12 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 		pApacheObject = new CApacheObject();
 		pApacheObject->SetChild(pGameObject, true);
 		pApacheObject->OnInitialize();
-		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f + 400.0f, 1000.0f, 500.0f);
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f, 1000.0f, m_pTerrain->GetWidth() * 2.0f);
 		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
 		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
 		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
 		pApacheObject->start_position = pApacheObject->GetPosition();
+		pApacheObject->obj_speed = 15.0f;
 
 		m_ppGameObjects[1] = pApacheObject; 
 	}
@@ -196,11 +198,12 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 		pApacheObject = new CApacheObject();
 		pApacheObject->SetChild(pGameObject, true);
 		pApacheObject->OnInitialize();
-		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f - 400.0f, 1000.0f, 500.0f);
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f, 1000.0f, m_pTerrain->GetWidth() * 4.0f);
 		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
 		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
 		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
 		pApacheObject->start_position = pApacheObject->GetPosition();
+		pApacheObject->obj_speed = 15.0f;
 
 		m_ppGameObjects[2] = pApacheObject;
 	}
@@ -210,28 +213,29 @@ void CScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* p
 		pApacheObject = new CApacheObject();
 		pApacheObject->SetChild(pGameObject, true);
 		pApacheObject->OnInitialize();
-		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f, 500.0f, 500.0f);
+		pApacheObject->SetPosition(m_pTerrain->GetWidth() / 2.0f, 1000.0f, m_pTerrain->GetWidth() * 6.0f);
 		pApacheObject->Rotate(0.0f, 0.0f, 0.0f);
 		pApacheObject->OOBB.Center = pApacheObject->GetPosition();
 		pApacheObject->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
 		pApacheObject->start_position = pApacheObject->GetPosition();
+		pApacheObject->obj_speed = 15.0f;
 
 		m_ppGameObjects[3] = pApacheObject;
 	}
 
 	{
 		CHelicopterObject* pGameObject = CHelicopterObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Tree.bin");
-		CHelicopterObject* Cactus = new CHelicopterObject();
-		Cactus = new CApacheObject();
-		Cactus->SetChild(pGameObject, true);
-		Cactus->OnInitialize();
-		Cactus->SetPosition(m_pTerrain->GetWidth() / 2.0f, -4000.0f, -4000.0f);
-		Cactus->Rotate(0.0f, 0.0f, 0.0f);
-		Cactus->OOBB.Center = Cactus->GetPosition();
-		Cactus->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
-		Cactus->start_position = Cactus->GetPosition();
+		CHelicopterObject* Tree = new CHelicopterObject();
+		Tree = new CApacheObject();
+		Tree->SetChild(pGameObject, true);
+		Tree->OnInitialize();
+		Tree->SetPosition(m_pTerrain->GetWidth() / 2.0f, -4000.0f, -4000.0f);
+		Tree->Rotate(0.0f, 0.0f, 0.0f);
+		Tree->OOBB.Center = Tree->GetPosition();
+		Tree->OOBB.Extents = { 50.0f, 50.0f, 50.0f };
+		Tree->start_position = Tree->GetPosition();
 
-		m_ppGameObjects[4] = Cactus;
+		m_ppGameObjects[4] = Tree;
 	}
 	
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
@@ -360,6 +364,17 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 			m_ppGameObjects[4]->SetScale(1.0f, 1.0f, 1.0f);
 			m_ppGameObjects[4]->SetPosition(m_pPlayer->GetPosition());
 			break;
+		case VK_F4:
+			m_pPlayer->SetPosition({ m_pTerrain->GetWidth() / 2, 1000.0f, 100.0f });
+			m_ppGameObjects[0]->SetPosition(m_pTerrain->GetWidth() / 2, 1000.0f, 2000.0f);
+			m_ppGameObjects[0]->start_position = m_ppGameObjects[0]->GetPosition();
+			m_ppGameObjects[1]->SetPosition(m_pTerrain->GetWidth() / 2 - 1000.0f, 1000.0f, 2000.0f);
+			m_ppGameObjects[1]->start_position = m_ppGameObjects[1]->GetPosition();
+			m_ppGameObjects[2]->SetPosition(m_pTerrain->GetWidth() / 2 + 1000.0f, 1000.0f, 2000.0f);
+			m_ppGameObjects[2]->start_position = m_ppGameObjects[2]->GetPosition();
+			m_ppGameObjects[3]->SetPosition(m_pTerrain->GetWidth() / 2, 1000.0f - 1000.0f, 2000.0f);
+			m_ppGameObjects[3]->start_position = m_ppGameObjects[3]->GetPosition();
+;			break;
 		default:
 			break;
 		}
@@ -373,8 +388,6 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 // 플레이어 키 입력 설정
 bool CScene::ProcessInput(UCHAR* pKeysBuffer)
 {
-
-
 	return(false);
 }
 
@@ -408,8 +421,19 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 	
 	if (m_pTerrain) m_pTerrain->Render(pd3dCommandList, pCamera);
 
+	timerate += 1;
+	if (timerate == 1200) {	// 대략 20(60 * 20)초에 1번 진입하는 if문
+		m_ppGameObjects[spawn_number]->SetPosition(m_pTerrain->GetWidth() / 2.0f, 1000.0f, m_pTerrain->GetWidth());
+		timerate = 0;
+		spawn_number += 1;
+		if (spawn_number >= 4)
+			spawn_number = 0;
+	}
+
 	for (int i = 0; i < m_nGameObjects; i++)
 	{
+		
+
 		if (m_ppGameObjects[i])
 		{
 			m_ppGameObjects[i]->Animate(m_fElapsedTime, NULL);
@@ -425,7 +449,7 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 
 					// 단위벡터 만큼씩 이동한다.
 					dis = Vector3::Normalize(Vector3::Subtract(m_ppGameObjects[m_ppGameObjects[i]->MyTargetNumber]->GetPosition(), m_ppGameObjects[i]->GetPosition()));	// 미사일 -> 적의 방향벡터
-					dis = Vector3::Multiply(dis, 4);
+					dis = Vector3::Multiply(dis, 1000.0f);
 					m_ppGameObjects[i]->SetPosition(Vector3::Add(m_ppGameObjects[i]->GetPosition(), dis));
 
 					// XZ평면 회전
@@ -463,12 +487,14 @@ void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera
 				else if (m_ppGameObjects[i]->MyTargetNumber == -1) {
 					m_ppGameObjects[i]->search_vector = Vector3::Normalize(m_pPlayer->GetLook());
 					m_ppGameObjects[i]->search_vector = Vector3::Multiply(m_ppGameObjects[i]->search_vector, 4);
+
 					m_ppGameObjects[i]->SetPosition(Vector3::Add(m_ppGameObjects[i]->GetPosition(), m_ppGameObjects[i]->search_vector));
 					m_ppGameObjects[i]->OOBB.Center = m_ppGameObjects[i]->GetPosition();	// OOBB 박스 위치 갱신
 				}
 			}
 			else {
 				dis = Vector3::Normalize(Vector3::Subtract(m_pPlayer->GetPosition(), m_ppGameObjects[i]->GetPosition()));	// 적 -> 플레이어의 방향벡터
+				dis = Vector3::Multiply(dis, m_ppGameObjects[i]->obj_speed);
 
 				// 플레이어와 객체들 충돌 체크 후 조치
 				if (isCollision(m_ppGameObjects[i])) {

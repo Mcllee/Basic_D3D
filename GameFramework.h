@@ -45,11 +45,11 @@ private:
 	float rotateL = 0.0f;
 	float rotateR = 0.0f;
 private:
-	HINSTANCE					m_hInstance;
-	HWND						m_hWnd; 
+	HINSTANCE					m_hInstance{};
+	HWND						m_hWnd{};
 
-	int							m_nWndClientWidth;
-	int							m_nWndClientHeight;
+	int							m_nWndClientWidth{};
+	int							m_nWndClientHeight{};
         
 	IDXGIFactory4				*m_pdxgiFactory = NULL;
 	IDXGISwapChain3				*m_pdxgiSwapChain = NULL;
@@ -59,7 +59,7 @@ private:
 	UINT						m_nMsaa4xQualityLevels = 0;
 
 	static const UINT			m_nSwapChainBuffers = 2;
-	UINT						m_nSwapChainBufferIndex;
+	UINT						m_nSwapChainBufferIndex{};
 
 	ID3D12Resource				*m_ppd3dSwapChainBackBuffers[m_nSwapChainBuffers];
 	ID3D12DescriptorHeap		*m_pd3dRtvDescriptorHeap = NULL;
@@ -67,7 +67,7 @@ private:
 
 	ID3D12Resource				*m_pd3dDepthStencilBuffer = NULL;
 	ID3D12DescriptorHeap		*m_pd3dDsvDescriptorHeap = NULL;
-	UINT						m_nDsvDescriptorIncrementSize;
+	UINT						m_nDsvDescriptorIncrementSize{};
 
 	ID3D12CommandAllocator		*m_pd3dCommandAllocator = NULL;
 	ID3D12CommandQueue			*m_pd3dCommandQueue = NULL;
@@ -75,19 +75,19 @@ private:
 
 	ID3D12Fence					*m_pd3dFence = NULL;
 	UINT64						m_nFenceValues[m_nSwapChainBuffers];
-	HANDLE						m_hFenceEvent;
+	HANDLE						m_hFenceEvent{};
 
 #if defined(_DEBUG)
-	ID3D12Debug					*m_pd3dDebugController;
+	ID3D12Debug					*m_pd3dDebugController{};
 #endif
 
-	CGameTimer					m_GameTimer;
+	CGameTimer					m_GameTimer{};
 
 	CScene						*m_pScene = NULL;
 	CPlayer						*m_pPlayer = NULL;
 	CCamera						*m_pCamera = NULL;
 
-	POINT						m_ptOldCursorPos;
+	POINT						m_ptOldCursorPos{};
 
 	_TCHAR						m_pszFrameRate[70];
 };
